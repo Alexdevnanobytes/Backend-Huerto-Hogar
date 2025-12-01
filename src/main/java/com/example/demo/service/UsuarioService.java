@@ -28,7 +28,7 @@ public class UsuarioService {
     }
 
     // ============================================================
-    // REGISTER → Usado por Controller y Auth
+    // REGISTER
     // ============================================================
     public Usuario register(UsuarioCreateDto dto) {
 
@@ -43,7 +43,6 @@ public class UsuarioService {
             throw new IllegalArgumentException("El nombre de usuario ya existe");
         }
 
-        // Rol USER por defecto
         Rol rolUser = rolRepository.findByNombre("USER")
                 .orElseThrow(() -> new IllegalStateException("Rol USER no existe en BD"));
 
@@ -59,7 +58,15 @@ public class UsuarioService {
     }
 
     // ============================================================
-    // CRUD NORMAL PARA CONTROLADOR
+    // MÉTODO QUE FALTABA
+    // ============================================================
+    public Optional<Usuario> findByUsername(String username) {
+        return usuarioRepository.findByUsername(username);
+    }
+
+
+    // ============================================================
+    // CRUD NORMAL
     // ============================================================
     public List<Usuario> findAll() {
         return usuarioRepository.findAll();

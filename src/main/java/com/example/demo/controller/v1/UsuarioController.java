@@ -5,6 +5,7 @@ import com.example.demo.model.entity.Usuario;
 import com.example.demo.service.UsuarioService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 import java.net.URI;
 import java.util.List;
@@ -23,6 +24,24 @@ public class UsuarioController {
     public ResponseEntity<List<Usuario>> getAll() {
         return ResponseEntity.ok(usuarioService.findAll());
     }
+
+    // ================================
+    //   ENDPOINT PARA OBTENER EL USUARIO LOGUEADO
+    // ================================
+    @GetMapping("/me")
+    public ResponseEntity<Usuario> getMe(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).build();
+        }
+
+        String username = authentication.getName();
+
+        return usuarioService
+                .findByUsername(username)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<Usuario> getById(@PathVariable Long id) {

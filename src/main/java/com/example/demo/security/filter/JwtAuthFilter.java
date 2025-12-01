@@ -33,9 +33,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        // 🟢 RUTAS QUE NO NECESITAN JWT (TODAS)
-        if (path.matches("^/api/v1/usuarios(/.*)?$")
-                || path.matches("^/auth(/.*)?$")
+        // 🟢 RUTAS QUE REALMENTE NO NECESITAN JWT
+        // (login/register, swagger, h2). OJO: YA NO SALTAMOS /api/v1/usuarios
+        if (path.startsWith("/auth")
                 || path.startsWith("/h2-console")
                 || path.startsWith("/v3/api-docs")
                 || path.startsWith("/swagger-ui")) {
@@ -48,6 +48,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         final String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            // No hay token → se deja pasar como anónimo
             filterChain.doFilter(request, response);
             return;
         }
@@ -55,7 +56,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         final String token = authHeader.substring(7);
         final String username = jwtService.extractUsername(token);
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (username != null
+                && SecurityContextHolder.getContext().getAuthentication() == null) {
 
             var userDetails = userDetailsService.loadUserByUsername(username);
 

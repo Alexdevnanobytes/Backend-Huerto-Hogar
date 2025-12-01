@@ -20,9 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import com.example.demo.controller.v1.UsuarioController;
 import org.springframework.http.HttpMethod;
-
 
 import java.util.List;
 
@@ -43,24 +41,44 @@ public class SecurityConfig {
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
 
-                        // PERMITIR TODO EL CONTROLADOR
-                        .requestMatchers("/api/v1/usuarios/**").permitAll()
-
-                        // Rutas de autenticación
+                        // 🔓 Auth (login / register)
                         .requestMatchers("/auth/**").permitAll()
+
+                        // 🔓 Catálogo público (solo lectura)
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/v1/productos/**",
+                                "/api/v1/categorias/**"
+                        ).permitAll()
+
+                        // 👤 Usuario actual (/me) → cualquier autenticado
+                        .requestMatchers("/api/v1/usuarios/me").authenticated()
+
+                        // 👑 Administración de usuarios → solo ADMIN
+                        .requestMatchers("/api/v1/usuarios/**").hasAuthority("ADMIN")
+
+                        // 👑 Roles → solo ADMIN
+                        .requestMatchers("/api/v1/roles/**").hasAuthority("ADMIN")
+
+                        // 🧑‍💼 Productos (POST/PUT/DELETE) → ADMIN o SELL
+                        .requestMatchers(HttpMethod.POST,   "/api/v1/productos/**").hasAnyAuthority("ADMIN", "SELL")
+                        .requestMatchers(HttpMethod.PUT,    "/api/v1/productos/**").hasAnyAuthority("ADMIN", "SELL")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/productos/**").hasAnyAuthority("ADMIN", "SELL")
+
+                        // 🛒 Carrito → cualquier autenticado
+                        .requestMatchers("/api/v1/carritos/**").authenticated()
 
                         // Swagger / H2
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 
-                        // TODO LO DEMÁS REQUIERE JWT
+                        // 🔒 Todo lo demás autenticado
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
                 .build();
     }
-
 
 
     @Bean
@@ -95,5 +113,4 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
-
 }

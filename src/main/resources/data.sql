@@ -102,5 +102,29 @@ INSERT INTO productos (nombre, descripcion, precio, stock, codigo, imagen_url, c
 -- =========================
 INSERT INTO roles (nombre, descripcion) VALUES
 ('ADMIN', 'Administrador del sistema'),
-('VENDEDOR', 'Puede gestionar productos y órdenes'),
-('CLIENTE', 'Cliente que compra en la tienda');
+('SELL', 'Puede gestionar productos y órdenes'),
+('USER', 'Cliente que compra en la tienda');
+
+-- =========================
+-- USUARIOS POR DEFECTO
+-- =========================
+-- password REAL: 123123 (BCrypt)
+INSERT INTO usuarios (username, password, email, enabled)
+VALUES
+('admin', '$2a$10$CshMUOu1dkGIIyVLoP48aexG3yU37.iEKHPGKIPs14O0yAqXZZTBi',
+ 'admin@local', true),
+('vendedor', '$2a$10$CshMUOu1dkGIIyVLoP48aexG3yU37.iEKHPGKIPs14O0yAqXZZTBi',
+'vendedor@local', true);
+
+-- =========================
+-- ASIGNACIÓN DE ROLES
+-- =========================
+-- admin → ADMIN
+INSERT INTO usuarios_roles (usuario_id, rol_id)
+VALUES
+(1, 1);  -- usuario 1 (admin), rol 1 (ADMIN)
+
+-- vendedor → SELL
+INSERT INTO usuarios_roles (usuario_id, rol_id)
+VALUES
+(2, 2);  -- usuario 2 (vendedor), rol 2 (SELL)
